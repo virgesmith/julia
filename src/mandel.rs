@@ -106,10 +106,13 @@ impl Mandel {
   }
 
   pub fn render(&mut self) {
+
+    let cmap = utils::colour_map(self.depth as usize);
+
     for i in 0..((self.z.width * self.z.height) as usize) {
-      self.image[i*4] = 255 - self.z.cells[i] as u8;
-      self.image[i*4+1] = 255 - self.z.cells[i] as u8;
-      self.image[i*4+2] = 255 - self.z.cells[i] as u8;
+      self.image[i*4] = cmap[self.z.cells[i] as usize][0];
+      self.image[i*4+1] = cmap[self.z.cells[i] as usize][1];
+      self.image[i*4+2] = cmap[self.z.cells[i] as usize][2];
       self.image[i*4+3] = 255u8;
     }
   }

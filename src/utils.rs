@@ -49,17 +49,18 @@ impl LCG {
 }
 
 
-// export function getColours(n) {
-//   var colours = [];
-//   const u = n - 1;
-//   const s = u / 2;
-//   const t = Math.PI/u;
-//   for (var i=0; i < n; ++i) {
-//     var r = 255 - Math.round(127.5 * (1.0 - Math.cos(i *     t)));
-//     var g = 255 - Math.round(127.5 * (1.0 - Math.cos(i * 3 * t)));
-//     var b = 255 - Math.round(127.5 * (1.0 - Math.cos(i * 5 * t)));
+pub fn colour_map(n: usize) -> Vec<Vec<u8>> {
+  let mut colours = vec![vec![0u8; 4]; n+1];
 
-//     colours.push(colour(r, g, b));
-//   }
-//   return colours;
-// };
+  let u = n - 1;
+  let t = std::f64::consts::PI / (u as f64);
+
+  for i in 0..=n {
+    colours[i][0] = 255 - (127.5 * (1. - (i as f64 * t).cos())) as u8;
+    colours[i][1] = 255 - (127.5 * (1. - ((i*3) as f64 * t).cos())) as u8;
+    colours[i][2] = 255 - (127.5 * (1. - ((i*5) as f64 * t).cos())) as u8;
+    colours[i][3] = 255;
+  }
+  colours
+}
+
