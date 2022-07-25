@@ -1,6 +1,8 @@
 import {init, Julia, Mandel} from "./pkg/julia.js";
 //import Julia from "./pkg/julia.js";
 
+const CELL_SIZE = 1;
+
 const runWasm = async () => {
   // Instantiate our wasm module
   const rustWasm = await init("./pkg/julia_bg.wasm");
@@ -8,6 +10,7 @@ const runWasm = async () => {
 
   // Get our canvas element from our index.html
   const canvasElement = document.querySelector("canvas");
+  const info = document.querySelector("p");
 
   // Set up Context and ImageData on the canvas
   const canvasContext = canvasElement.getContext("2d");
@@ -16,30 +19,30 @@ const runWasm = async () => {
     canvasElement.height
   );
 
-  // Clear the canvas
-  canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
-
   // var julia = new Julia(0., 0., 2.0, canvasElement.width, canvasElement.height);
-  var julia = new Mandel(canvasElement.width, canvasElement.height, 255);
-  julia.render();
+  var mandel = new Mandel(canvasElement.width, canvasElement.height, 2048);
 
-  const imageData = julia.image_buffer();
+  const imageData = mandel.image_buffer();
 
   // Set the values to the canvas image data
   canvasImageData.data.set(imageData);
 
+  const updateCoords = () => {
+    info.innerHTML = `centre=${mandel.mid_r()}+${mandel.mid_i()}i scale=${mandel.scale()}`;
+  };
+
   const render = () => {
-    //julia.tick();
 
-    // const imageData = julia.cells();
-
-    // // Set the values to the canvas image data
-    // canvasImageData.data.set(imageData);
+    //mandel.tick();
+    mandel.render();
+    updateCoords();
 
     // Clear the canvas
     canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
-    const imageData = julia.image_buffer();
+    const imageData = mandel.image_buffer();
+
+    console.log(imageData);
 
     // Set the values to the canvas image data
     canvasImageData.data.set(imageData);
@@ -49,9 +52,31 @@ const runWasm = async () => {
     console.log("rendered");
   };
 
+
+  (function() {
+    "use strict";
+
+    document.onmousedown = handleMouseClick;
+    function handleMouseClick(event) {
+
+      const rect = canvasElement.getBoundingClientRect();
+
+      const x = (event.clientX - rect.left) * canvasElement.width / canvasElement.clientWidth;
+      const y = (event.clientY - rect.top) * canvasElement.height / canvasElement.clientHeight;
+
+      console.log(x,y);
+
+      //console.log(x, y);
+      if (x >= 0 && y >= 0 && x <= canvasElement.width && y <= canvasElement.height) {
+        mandel.zoom(x, y);
+        render();
+      }
+    }
+  })();
+
   render();
-  setInterval(() => {
-    render();
-  }, 1000);
+  // setInterval(() => {
+  //   render();
+  // }, 1000);
 };
 runWasm();
