@@ -37,10 +37,6 @@ impl Mandel {
     mandel
   }
 
-  pub fn cells(&self) -> *const Cell {
-    self.z.cells.as_ptr()
-  }
-
   pub fn mid_r(&self) -> f64 {
     (self.z.zmin.re + self.z.zmax.re) / 2.0
   }

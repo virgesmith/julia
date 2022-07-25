@@ -44,14 +44,6 @@ impl Julia {
     julia
   }
 
-  pub fn image_buffer(&self) -> Uint8Array {
-    unsafe { Uint8Array::view(&self.image) }
-  }
-
-  pub fn cells(&self) -> *const u8 {
-    self.z.cells.as_ptr()
-  }
-
   pub fn locus_r(&self) -> u32 {
     ((self.c.re - self.z.zmin.re) * self.z.rscale) as u32
   }
@@ -97,9 +89,9 @@ impl Julia {
 
   pub fn render(&mut self) {
     for i in 0..((self.z.width * self.z.height) as usize) {
-      self.image[i*4] = self.z.cells[i];
-      self.image[i*4+1] = self.z.cells[i];
-      self.image[i*4+2] = self.z.cells[i];
+      self.image[i*4] = 255u8 - self.z.cells[i];
+      self.image[i*4+1] = 255u8 - self.z.cells[i];
+      self.image[i*4+2] = 255u8 - self.z.cells[i];
       self.image[i*4+3] = 255u8;
     }
   }
@@ -131,6 +123,10 @@ impl Julia {
 
     self.draw_miim_impl(z, cells, depth+1);
     self.draw_miim_impl(-z, cells, depth+1);
+  }
+
+  pub fn image_buffer(&self) -> Uint8Array {
+    unsafe { Uint8Array::view(&self.image) }
   }
 
 }
