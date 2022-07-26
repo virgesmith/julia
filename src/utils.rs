@@ -55,12 +55,13 @@ pub fn colour_map(n: usize) -> Vec<Vec<u8>> {
   let u = n - 1;
   let t = std::f64::consts::PI / (u as f64);
 
-  for i in 0..=n {
-    colours[i][0] = 255 - (127.5 * (1. - (i as f64 * t).cos())) as u8;
-    colours[i][1] = 255 - (127.5 * (1. - ((i*3) as f64 * t).cos())) as u8;
-    colours[i][2] = 255 - (127.5 * (1. - ((i*5) as f64 * t).cos())) as u8;
-    colours[i][3] = 255;
+  for (i, colour) in colours.iter_mut().enumerate().take(n + 1) {
+    colour[0] = 255 - (127.5 * (1. - (i as f64 * t).cos())) as u8;
+    colour[1] = 255 - (127.5 * (1. - ((i*3) as f64 * t).cos())) as u8;
+    colour[2] = 255 - (127.5 * (1. - ((i*5) as f64 * t).cos())) as u8;
+    colour[3] = 255;
   }
+
   colours
 }
 
