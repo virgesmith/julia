@@ -94,6 +94,14 @@ impl Julia {
       self.image[i*4+2] = 255u8 - self.z.cells[i];
       self.image[i*4+3] = 255u8;
     }
+
+    // plot the locus
+    let idx = (self.locus_r() + self.z.width * self.locus_i()) as usize;
+    self.image[idx*4] = 255u8;
+    self.image[idx*4+1] = 0u8;
+    self.image[idx*4+2] = 0u8;
+    self.image[idx*4+3] = 255u8;
+
   }
 
   // Uses the MIIM algorithm

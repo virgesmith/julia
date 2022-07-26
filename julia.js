@@ -1,7 +1,6 @@
 "use strict";
 
-import {init, Julia, Mandel} from "./pkg/julia.js";
-//import Julia from "./pkg/julia.js";
+import {init, Julia} from "./pkg/julia.js";
 
 const CELL_SIZE = 1;
 
@@ -14,6 +13,10 @@ const runWasm = async () => {
   // Get our canvas element from our index.html
   const canvasElement = document.querySelector("canvas");
   const playPauseButton = document.querySelector("button");
+
+  const isPaused = () => {
+    return animationId === null;
+  };
 
   const play = () => {
     playPauseButton.textContent = "⏸";
@@ -35,7 +38,6 @@ const runWasm = async () => {
   });
 
 
-
   // Set up Context and ImageData on the canvas
   const canvasContext = canvasElement.getContext("2d");
   const canvasImageData = canvasContext.createImageData(
@@ -44,11 +46,6 @@ const runWasm = async () => {
   );
 
   var julia = new Julia(0.1, 0.1, 2.0, canvasElement.width, canvasElement.height);
-
-  const imageData = julia.image_buffer();
-
-  // Set the values to the canvas image data
-  canvasImageData.data.set(imageData);
 
   const render = () => {
 
@@ -65,11 +62,9 @@ const runWasm = async () => {
 
     // Place the new image onto the canvas
     canvasContext.putImageData(canvasImageData, 0, 0);
-    console.log("rendered");
 
     animationId = requestAnimationFrame(render);
   };
-
 
   (function() {
 
@@ -88,8 +83,5 @@ const runWasm = async () => {
   })();
 
   render();
-  // setInterval(() => {
-  //   render();
-  // }, 1000);
 };
 runWasm();
