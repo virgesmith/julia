@@ -11,7 +11,7 @@ Based on the tutorial [here](https://wasmbyexample.dev). Doesn't require node.js
 ## build
 
 ```sh
-wasm-pack build --target web
+wasm-pack build --target web --no-typescript
 ```
 
 ## run locally
@@ -24,9 +24,15 @@ python3 -m http.server
 
 ## issues
 
-- `export default` in wasm-pack generated js (remove last line and add `init` to the exports in the line above )
-- less js, more rust...
+- less js, more rust? handle mouse events directly in rust?
 
-## deploy
+## package/deploy
 
-TODO...
+Uses the nginx docker image:
+
+```
+docker build -t julia .
+docker run -it -d -p 80:80 julia:latest
+```
+
+

@@ -1,12 +1,10 @@
-import {init, Julia, Mandel} from "./pkg/julia.js";
-//import Julia from "./pkg/julia.js";
+import init, {Mandel} from "./pkg/julia.js";
 
 const CELL_SIZE = 1;
 
 const runWasm = async () => {
   // Instantiate our wasm module
   const rustWasm = await init("./pkg/julia_bg.wasm");
-  //const rustWasm = initSync("./pkg/julia_bg.wasm");
 
   // Get our canvas element from our index.html
   const canvasElement = document.querySelector("canvas");

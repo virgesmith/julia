@@ -1,6 +1,6 @@
 "use strict";
 
-import {init, Julia} from "./pkg/julia.js";
+import init, {Julia} from "./pkg/julia.js";
 
 const CELL_SIZE = 1;
 
