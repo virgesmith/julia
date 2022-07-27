@@ -40,14 +40,11 @@ const runWasm = async () => {
 
     const imageData = mandel.image_buffer();
 
-    console.log(imageData);
-
     // Set the values to the canvas image data
     canvasImageData.data.set(imageData);
 
     // Place the new image onto the canvas
     canvasContext.putImageData(canvasImageData, 0, 0);
-    console.log("rendered");
   };
 
 
@@ -57,16 +54,20 @@ const runWasm = async () => {
     document.onmousedown = handleMouseClick;
     function handleMouseClick(event) {
 
+      var factor = 0.5;
+      if (event.which == 1) { // left click zooms in
+        factor = 2.0;
+      } else if (event.which != 2) { // wheel click zooms out
+        return;
+      }
+
       const rect = canvasElement.getBoundingClientRect();
 
       const x = (event.clientX - rect.left) * canvasElement.width / canvasElement.clientWidth;
       const y = (event.clientY - rect.top) * canvasElement.height / canvasElement.clientHeight;
 
-      console.log(x,y);
-
-      //console.log(x, y);
       if (x >= 0 && y >= 0 && x <= canvasElement.width && y <= canvasElement.height) {
-        mandel.zoom(x, y);
+        mandel.zoom(x, y, factor);
         render();
       }
     }

@@ -49,19 +49,18 @@ impl Mandel {
     self.z.zmax.re - self.z.zmin.re
   }
 
-  pub fn zoom(&mut self, row: u32, col: u32) {
-
+  // factor > 1 zooms in
+  pub fn zoom(&mut self, row: u32, col: u32, factor: f64) {
     let (c, _) = self.z.get_point(row, col);
-    self.z.rscale *= 2.0;
-    self.z.iscale *= 2.0;
-    let dr = (self.z.zmax.re - self.z.zmin.re) / 4.0;
-    let di = (self.z.zmax.im - self.z.zmin.im) / 4.0;
+    self.z.rscale *= factor;
+    self.z.iscale *= factor;
+    let dr = (self.z.zmax.re - self.z.zmin.re) / (2.0 * factor);
+    let di = (self.z.zmax.im - self.z.zmin.im) / (2.0 * factor);
     self.z.zmin.re = c.re - dr;
     self.z.zmin.im = c.im - di;
     self.z.zmax.re = c.re + dr;
     self.z.zmax.im = c.im + di;
     self.draw();
-    //format!("({},{}) => {:?} {:} {:}", row, col, c, self.z.rscale, self.z.height)
   }
 
   fn draw(&mut self) {
