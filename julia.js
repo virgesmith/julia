@@ -2,15 +2,11 @@
 
 import init, {Julia} from "./pkg/julia.js";
 
-const CELL_SIZE = 1;
-
 let animationId = null;
 
 const runWasm = async () => {
-  // Instantiate our wasm module
-  const rustWasm = await init("./pkg/julia_bg.wasm");
+  await init("./pkg/julia_bg.wasm");
 
-  // Get our canvas element from our index.html
   const canvasElement = document.querySelector("canvas");
   const playPauseButton = document.querySelector("button");
 
@@ -37,8 +33,6 @@ const runWasm = async () => {
     }
   });
 
-
-  // Set up Context and ImageData on the canvas
   const canvasContext = canvasElement.getContext("2d");
   const canvasImageData = canvasContext.createImageData(
     canvasElement.width,
@@ -52,15 +46,12 @@ const runWasm = async () => {
     julia.tick();
     julia.render();
 
-    // Clear the canvas
     canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
     const imageData = julia.image_buffer();
 
-    // Set the values to the canvas image data
     canvasImageData.data.set(imageData);
 
-    // Place the new image onto the canvas
     canvasContext.putImageData(canvasImageData, 0, 0);
 
     animationId = requestAnimationFrame(render);

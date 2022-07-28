@@ -22,15 +22,19 @@ Use a proper web server for prod. For local dev:
 python3 -m http.server
 ```
 
-## issues
+## test (on frefox)
 
-- less js, more rust? handle mouse events directly in rust?
+```sh
+firefox --private-window localhost:8000
+```
+
+`F12` opens debug console
 
 ## package/deploy
 
 Uses the nginx docker image:
 
-```
+```sh
 docker build -t julia .
 docker run -it -d -p 80:80 julia:latest
 ```

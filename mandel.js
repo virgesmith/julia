@@ -1,28 +1,23 @@
+"use strict";
+
 import init, {Mandel} from "./pkg/julia.js";
 
-const CELL_SIZE = 1;
-
 const runWasm = async () => {
-  // Instantiate our wasm module
-  const rustWasm = await init("./pkg/julia_bg.wasm");
+  await init("./pkg/julia_bg.wasm");
 
-  // Get our canvas element from our index.html
   const canvasElement = document.querySelector("canvas");
   const info = document.querySelector("p");
 
-  // Set up Context and ImageData on the canvas
   const canvasContext = canvasElement.getContext("2d");
   const canvasImageData = canvasContext.createImageData(
     canvasElement.width,
     canvasElement.height
   );
 
-  // var julia = new Julia(0., 0., 2.0, canvasElement.width, canvasElement.height);
   var mandel = new Mandel(canvasElement.width, canvasElement.height, 2048);
 
   const imageData = mandel.image_buffer();
 
-  // Set the values to the canvas image data
   canvasImageData.data.set(imageData);
 
   const updateCoords = () => {
@@ -31,19 +26,15 @@ const runWasm = async () => {
 
   const render = () => {
 
-    //mandel.tick();
     mandel.render();
     updateCoords();
 
-    // Clear the canvas
     canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
     const imageData = mandel.image_buffer();
 
-    // Set the values to the canvas image data
     canvasImageData.data.set(imageData);
 
-    // Place the new image onto the canvas
     canvasContext.putImageData(canvasImageData, 0, 0);
   };
 
@@ -74,8 +65,6 @@ const runWasm = async () => {
   })();
 
   render();
-  // setInterval(() => {
-  //   render();
-  // }, 1000);
 };
+
 runWasm();
