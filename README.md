@@ -22,7 +22,7 @@ Use a proper web server for prod. For local dev:
 python3 -m http.server
 ```
 
-## test (on frefox)
+## test (on firefox)
 
 ```sh
 firefox --private-window localhost:8000

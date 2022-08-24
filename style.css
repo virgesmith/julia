@@ -1,0 +1,20 @@
+
+div {
+  text-align: center;
+}
+
+p {
+  text-align: center;
+}
+
+button {
+  border:none;
+  height:28px;
+  width:28px;
+}
+
+canvas {
+  image-rendering:pixelated;
+  image-rendering:crisp-edges;
+  width:800px;
+}
