@@ -40,7 +40,7 @@ impl Julia {
       rng: LCG::new(19937),
       image: vec![0u8; (width * height * 4) as usize]
     };
-    julia.draw();
+    julia.draw2();
     julia
   }
 
@@ -64,7 +64,25 @@ impl Julia {
     if self.c.im > self.z.zmax.im { self.c.im = self.z.zmax.im; }
     if self.c.im < self.z.zmin.im { self.c.im = self.z.zmin.im; }
 
-    self.draw();
+    self.draw2();
+  }
+
+
+  fn draw2(&mut self) {
+    let mut next = vec![0u8; (self.z.width * self.z.height) as usize];
+    for y in 0..self.z.height {
+      for x in 0..self.z.width {
+        let (mut z, _) = self.z.get_point(y, x);
+        let mut iter = 0u8;
+        while z.norm_sqr() < 400. && iter < 255 {
+          z = z * z + self.c;
+          iter += 5;
+        }
+        next[(y + self.z.height * x) as usize] = iter;
+      }
+    }
+    self.z.cells = next;
+
   }
 
   fn draw(&mut self) {
