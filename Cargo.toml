@@ -8,7 +8,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [features]
-default = ["console_error_panic_hook", "wee_alloc"]
+default = ["console_error_panic_hook"]
 
 [dependencies]
 wasm-bindgen = "*"
@@ -22,18 +22,13 @@ num-traits = "*"
 # code size when deploying.
 console_error_panic_hook = { version = "*", optional = true }
 
-# `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
-# compared to the default allocator's ~10K. It is slower than the default
-# allocator, however.
-wee_alloc = { version = "*", optional = true }
-
-[dependencies.web-sys]
-version = "0.3.4"
-features = [
-  'Document',
-  'Element',
-  'HtmlElement',
-  'Node',
-  'Window',
-  'console'
-]
+# [dependencies.web-sys]
+# version = "^0.3.4"
+# features = [
+#   'Document',
+#   'Element',
+#   'HtmlElement',
+#   'Node',
+#   'Window',
+#   'console'
+# ]
