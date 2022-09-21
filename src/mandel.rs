@@ -4,7 +4,7 @@ use wasm_bindgen::prelude::*;
 use num_complex::Complex as Cplx;
 use js_sys::Uint8Array;
 
-use crate::utils;
+use crate::utils::{colour_map, set_panic_hook};
 use crate::argand::ZPlane;
 
 type Cell = u16;
@@ -22,7 +22,7 @@ impl Mandel {
   #[wasm_bindgen(constructor)]
   pub fn new(width: u32, height: u32, maxiter: Cell) -> Mandel {
 
-    utils::set_panic_hook();
+    set_panic_hook();
 
     let bottom_left = Cplx::<f64>::new(-2.0, -1.25);
     let top_right = Cplx::<f64>::new(0.5, 1.25);
@@ -102,7 +102,7 @@ impl Mandel {
 
   pub fn render(&mut self) {
 
-    let cmap = utils::colour_map(self.depth as usize);
+    let cmap = colour_map(self.depth as usize);
 
     for i in 0..((self.z.width * self.z.height) as usize) {
       self.image[i*4] = cmap[self.z.cells[i] as usize][0];

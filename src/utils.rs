@@ -19,29 +19,6 @@ macro_rules! log {
   }
 }
 
-
-// need to copy this from rand because the crate links to C++ static libs
-pub struct LCG {
-  /// The seed
-  r: u32
-}
-
-impl LCG {
-  const A: u64 = 48271;
-  const M: u64 = std::i32::MAX as u64;
-
-  pub fn new(seed: u32) -> LCG {
-    assert_ne!(seed, 0);
-    LCG{r: seed}
-  }
-
-  pub fn next_1(&mut self) -> u32 {
-    self.r = ((self.r as u64 * LCG::A) % LCG::M) as u32;
-    self.r
-  }
-}
-
-
 pub fn colour_map(n: usize) -> Vec<Vec<u8>> {
   let mut colours = vec![vec![0u8; 4]; n+1];
 

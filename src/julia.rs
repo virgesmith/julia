@@ -4,7 +4,7 @@ use js_sys::Uint8Array;
 
 use num_complex::Complex as Cplx;
 
-use crate::utils::{LCG, set_panic_hook};
+use crate::utils::{set_panic_hook, colour_map};
 use crate::argand::ZPlane;
 
 
@@ -13,13 +13,9 @@ pub struct Julia {
   z: ZPlane<u8>,
   c: Cplx<f64>, // as in z <-> z*z + c
   a: Cplx<f64>, // attraction point that c moves to
-  rng: LCG,
+  // rng: LCG,
   image: Vec<u8>
 }
-
-const MIIM_MAX_DEPTH: u8 = 13;
-const IIM_ITERS: u32 = 100000;
-const INC: u8 = 4;
 
 // speed at which c is pulled to a
 const SPEED: f64 = 0.01;
@@ -37,10 +33,10 @@ impl Julia {
       z: ZPlane::<u8>::new(Cplx::new(-scale, -scale), Cplx::new(scale, scale), width, height),
       c: Cplx::new(cr, ci),
       a: Cplx::new(0.0, 0.0),
-      rng: LCG::new(19937),
+      // rng: LCG::new(19937),
       image: vec![0u8; (width * height * 4) as usize]
     };
-    julia.draw2();
+    julia.draw();
     julia
   }
 
@@ -64,11 +60,11 @@ impl Julia {
     if self.c.im > self.z.zmax.im { self.c.im = self.z.zmax.im; }
     if self.c.im < self.z.zmin.im { self.c.im = self.z.zmin.im; }
 
-    self.draw2();
+    self.draw();
   }
 
 
-  fn draw2(&mut self) {
+  fn draw(&mut self) {
     let mut next = vec![0u8; (self.z.width * self.z.height) as usize];
     for y in 0..self.z.height {
       for x in 0..self.z.width {
@@ -85,31 +81,14 @@ impl Julia {
 
   }
 
-  fn draw(&mut self) {
-    let mut next = vec![0u8; (self.z.width * self.z.height) as usize];
-    let z = self.draw_miim(&mut next);
-    self.draw_iim(z, &mut next);
-    self.z.cells = next;
-  }
-
-  fn draw_iim(&mut self, mut z: Cplx<f64>, next: &mut [u8]) {
-    for _ in 0..IIM_ITERS {
-      z = (z - self.c).sqrt();
-      let mut idx = self.z.get_index(&z);
-      if next[idx] > 0 {
-        next[idx] += INC;
-        z = -z;
-        idx = self.z.get_index(&z);
-      }
-      next[idx] += INC;
-    }
-  }
-
   pub fn render(&mut self) {
+
+    let cmap = colour_map(512);
+
     for i in 0..((self.z.width * self.z.height) as usize) {
-      self.image[i*4] = 255u8 - self.z.cells[i];
-      self.image[i*4+1] = 255u8 - self.z.cells[i];
-      self.image[i*4+2] = 255u8 - self.z.cells[i];
+      self.image[i*4] = cmap[self.z.cells[i] as usize][0];
+      self.image[i*4+1] = cmap[self.z.cells[i] as usize][2];
+      self.image[i*4+2] = cmap[self.z.cells[i] as usize][1];
       self.image[i*4+3] = 255u8;
     }
 
@@ -119,36 +98,6 @@ impl Julia {
     self.image[idx*4+1] = 0u8;
     self.image[idx*4+2] = 0u8;
     self.image[idx*4+3] = 255u8;
-
-  }
-
-  // Uses the MIIM algorithm
-  fn draw_miim(&mut self, next: &mut Vec::<u8>) -> Cplx<f64> {
-
-    let mut z = Cplx::new(0.0, 0.0);
-    let mut sign = 1.0;
-    // warmup
-    for _ in 0..25 {
-      if self.rng.next_1() % 2 == 1 { sign *= -1.0; }
-      z = (z - self.c).sqrt() * sign;
-    }
-    self.draw_miim_impl(z, next, 0);
-    z
-  }
-
-  fn draw_miim_impl(&mut self, z: Cplx<f64>, cells: &mut Vec<u8>, depth: u8) {
-
-    // copies z - caller will not see changes
-    let z = (z - self.c).sqrt();
-
-    let idx = self.z.get_index(&z);
-    cells[idx] += INC;
-    let idx = self.z.get_index(&-z);
-    cells[idx] += INC;
-    if depth >= MIIM_MAX_DEPTH { return; }
-
-    self.draw_miim_impl(z, cells, depth+1);
-    self.draw_miim_impl(-z, cells, depth+1);
   }
 
   pub fn image_buffer(&self) -> Uint8Array {
