@@ -1,6 +1,5 @@
 use wasm_bindgen::prelude::*;
 
-//use complex::Cplx;
 use num_complex::Complex as Cplx;
 use js_sys::Uint8Array;
 
@@ -13,7 +12,8 @@ type Cell = u16;
 pub struct Mandel {
   z: ZPlane<Cell>,
   depth: Cell,
-  image: Vec<u8>
+  image: Vec<u8>,
+  colour_map: Vec<Vec<u8>>
 }
 
 #[wasm_bindgen]
@@ -30,7 +30,8 @@ impl Mandel {
     let mut mandel = Mandel {
       z: ZPlane::<Cell>::new(bottom_left, top_right, width, height),
       depth: maxiter - 1,
-      image: vec![0u8; (width * height * 4) as usize]
+      image: vec![0u8; (width * height * 4) as usize],
+      colour_map: colour_map((maxiter - 1) as usize)
     };
 
     mandel.draw();
@@ -75,7 +76,7 @@ impl Mandel {
         let mut z_prev = z;
         let mut period = 0;
         while it < self.depth && (r2 + i2) < 4.0 {
-          //z = z * z + c;
+          // z = z * z + c;
           // hand optimised
           z.im = (z.re + z.re) * z.im + c.im;
           z.re = r2 - i2 + c.re;
@@ -101,13 +102,10 @@ impl Mandel {
   }
 
   pub fn render(&mut self) {
-
-    let cmap = colour_map(self.depth as usize);
-
     for i in 0..((self.z.width * self.z.height) as usize) {
-      self.image[i*4] = cmap[self.z.cells[i] as usize][0];
-      self.image[i*4+1] = cmap[self.z.cells[i] as usize][1];
-      self.image[i*4+2] = cmap[self.z.cells[i] as usize][2];
+      self.image[i*4] = self.colour_map[self.z.cells[i] as usize][0];
+      self.image[i*4+1] = self.colour_map[self.z.cells[i] as usize][1];
+      self.image[i*4+2] = self.colour_map[self.z.cells[i] as usize][2];
       self.image[i*4+3] = 255u8;
     }
   }

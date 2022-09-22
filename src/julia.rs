@@ -13,8 +13,8 @@ pub struct Julia {
   z: ZPlane<u8>,
   c: Cplx<f64>, // as in z <-> z*z + c
   a: Cplx<f64>, // attraction point that c moves to
-  // rng: LCG,
-  image: Vec<u8>
+  image: Vec<u8>,
+  colour_map: Vec<Vec<u8>>
 }
 
 // speed at which c is pulled to a
@@ -34,18 +34,11 @@ impl Julia {
       c: Cplx::new(cr, ci),
       a: Cplx::new(0.0, 0.0),
       // rng: LCG::new(19937),
-      image: vec![0u8; (width * height * 4) as usize]
+      image: vec![0u8; (width * height * 4) as usize],
+      colour_map: colour_map(512)
     };
     julia.draw();
     julia
-  }
-
-  pub fn locus_r(&self) -> u32 {
-    ((self.c.re - self.z.zmin.re) * self.z.rscale) as u32
-  }
-
-  pub fn locus_i(&self) -> u32 {
-    ((self.c.im - self.z.zmin.im) * self.z.iscale) as u32
   }
 
   pub fn set_attract(&mut self, row: u32, col: u32) {
@@ -63,7 +56,6 @@ impl Julia {
     self.draw();
   }
 
-
   fn draw(&mut self) {
     let mut next = vec![0u8; (self.z.width * self.z.height) as usize];
     for y in 0..self.z.height {
@@ -78,23 +70,19 @@ impl Julia {
       }
     }
     self.z.cells = next;
-
   }
 
   pub fn render(&mut self) {
-
-    let cmap = colour_map(512);
-
     for i in 0..((self.z.width * self.z.height) as usize) {
-      self.image[i*4] = cmap[self.z.cells[i] as usize][0];
-      self.image[i*4+1] = cmap[self.z.cells[i] as usize][2];
-      self.image[i*4+2] = cmap[self.z.cells[i] as usize][1];
+      self.image[i*4] = self.colour_map[self.z.cells[i] as usize][0];
+      self.image[i*4+1] = self.colour_map[self.z.cells[i] as usize][1];
+      self.image[i*4+2] = self.colour_map[self.z.cells[i] as usize][2];
       self.image[i*4+3] = 255u8;
     }
 
     // plot the locus
-    let idx = (self.locus_r() + self.z.width * self.locus_i()) as usize;
-    self.image[idx*4] = 255u8;
+    let idx = self.z.get_index(&self.c);
+    self.image[idx*4] = 0u8;
     self.image[idx*4+1] = 0u8;
     self.image[idx*4+2] = 0u8;
     self.image[idx*4+3] = 255u8;
@@ -103,5 +91,4 @@ impl Julia {
   pub fn image_buffer(&self) -> Uint8Array {
     unsafe { Uint8Array::view(&self.image) }
   }
-
 }
