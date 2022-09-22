@@ -20,6 +20,8 @@ pub struct Julia {
 // speed at which c is pulled to a
 const SPEED: f64 = 0.01;
 
+const MAXITER: u8 = 255;
+
 
 #[wasm_bindgen]
 impl Julia {
@@ -33,7 +35,6 @@ impl Julia {
       z: ZPlane::<u8>::new(Cplx::new(-scale, -scale), Cplx::new(scale, scale), width, height),
       c: Cplx::new(cr, ci),
       a: Cplx::new(0.0, 0.0),
-      // rng: LCG::new(19937),
       image: vec![0u8; (width * height * 4) as usize],
       colour_map: colour_map(512)
     };
@@ -57,16 +58,20 @@ impl Julia {
   }
 
   fn draw(&mut self) {
-    let mut next = vec![0u8; (self.z.width * self.z.height) as usize];
-    for y in 0..self.z.height {
+    let n = (self.z.width * self.z.height) as usize;
+    let mut next = vec![0u8; n];
+
+    for y in 0..self.z.height / 2 {
       for x in 0..self.z.width {
         let (mut z, _) = self.z.get_point(y, x);
         let mut iter = 0u8;
-        while z.norm_sqr() < 400. && iter < 255 {
+        while z.norm_sqr() < 400. && iter < MAXITER {
           z = z * z + self.c;
           iter += 5;
         }
-        next[(y + self.z.height * x) as usize] = iter;
+        let p = (y + self.z.height * x) as usize;
+        next[p] = iter;
+        next[n-p-1] = iter;
       }
     }
     self.z.cells = next;

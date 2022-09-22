@@ -16,5 +16,5 @@ button {
 canvas {
   image-rendering:pixelated;
   image-rendering:crisp-edges;
-  width:800px;
+  width:1000px;
 }
