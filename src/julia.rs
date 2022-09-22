@@ -7,10 +7,11 @@ use num_complex::Complex as Cplx;
 use crate::utils::{set_panic_hook, colour_map};
 use crate::argand::ZPlane;
 
+type Cell = u8;
 
 #[wasm_bindgen]
 pub struct Julia {
-  z: ZPlane<u8>,
+  z: ZPlane<Cell>,
   c: Cplx<f64>, // as in z <-> z*z + c
   a: Cplx<f64>, // attraction point that c moves to
   image: Vec<u8>,
@@ -20,7 +21,8 @@ pub struct Julia {
 // speed at which c is pulled to a
 const SPEED: f64 = 0.01;
 
-const MAXITER: u8 = 255;
+const MAXITER: Cell = 254;
+const ITER_INC: Cell = 2;
 
 
 #[wasm_bindgen]
@@ -32,7 +34,7 @@ impl Julia {
     set_panic_hook();
 
     let mut julia = Julia {
-      z: ZPlane::<u8>::new(Cplx::new(-scale, -scale), Cplx::new(scale, scale), width, height),
+      z: ZPlane::<Cell>::new(Cplx::new(-scale, -scale), Cplx::new(scale, scale), width, height),
       c: Cplx::new(cr, ci),
       a: Cplx::new(0.0, 0.0),
       image: vec![0u8; (width * height * 4) as usize],
@@ -59,15 +61,15 @@ impl Julia {
 
   fn draw(&mut self) {
     let n = (self.z.width * self.z.height) as usize;
-    let mut next = vec![0u8; n];
+    let mut next = vec![0 as Cell; n];
 
     for y in 0..self.z.height / 2 {
       for x in 0..self.z.width {
         let (mut z, _) = self.z.get_point(y, x);
-        let mut iter = 0u8;
+        let mut iter: Cell = 0;
         while z.norm_sqr() < 400. && iter < MAXITER {
           z = z * z + self.c;
-          iter += 5;
+          iter += ITER_INC;
         }
         let p = (y + self.z.height * x) as usize;
         next[p] = iter;
