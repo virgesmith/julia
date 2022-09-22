@@ -38,5 +38,3 @@ Uses the nginx docker image:
 docker build -t julia .
 docker run -it -d -p 80:80 julia:latest
 ```
-
-
