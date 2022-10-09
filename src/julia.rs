@@ -2,6 +2,7 @@ use wasm_bindgen::prelude::*;
 
 use js_sys::Uint8Array;
 
+//use rayon::prelude::*;
 use num_complex::Complex as Cplx;
 
 use crate::utils::{set_panic_hook, colour_map};
@@ -59,28 +60,31 @@ impl Julia {
     self.draw();
   }
 
+  fn iterate(&self, i: usize) -> Cell{
+    let (x, y) = (i as u32 / self.z.height, i as u32 % self.z.width);
+      let (mut z, _) = self.z.get_point(y, x);
+      let mut iter: Cell = 0;
+      while z.norm_sqr() < 400. && iter < MAXITER {
+        z = z * z + self.c;
+        iter += ITER_INC;
+      }
+    iter
+  }
+
   fn draw(&mut self) {
-    let n = (self.z.width * self.z.height) as usize;
+    // iterate over half the plane (symmetry)
+    let n = (self.z.width * self.z.height / 2) as usize;
     let mut next = vec![0 as Cell; n];
 
-    for y in 0..self.z.height / 2 {
-      for x in 0..self.z.width {
-        let (mut z, _) = self.z.get_point(y, x);
-        let mut iter: Cell = 0;
-        while z.norm_sqr() < 400. && iter < MAXITER {
-          z = z * z + self.c;
-          iter += ITER_INC;
-        }
-        let p = (y + self.z.height * x) as usize;
-        next[p] = iter;
-        next[n-p-1] = iter;
-      }
-    }
-    self.z.cells = next;
+    next.iter_mut().enumerate().for_each(|(i, n)| *n = self.iterate(i));
+    self.z.cells[0..n].copy_from_slice(&next);
+    next.reverse();
+    self.z.cells[n..].copy_from_slice(&next);
   }
 
   pub fn render(&mut self) {
-    for i in 0..((self.z.width * self.z.height) as usize) {
+    let n = (self.z.width * self.z.height) as usize;
+    for i in 0..n {
       self.image[i*4] = self.colour_map[self.z.cells[i] as usize][0];
       self.image[i*4+1] = self.colour_map[self.z.cells[i] as usize][1];
       self.image[i*4+2] = self.colour_map[self.z.cells[i] as usize][2];
