@@ -8,12 +8,14 @@ use crate::argand::ZPlane;
 
 type Cell = u16;
 
+const COLOUR_MAP_SIZE: usize = 1024;
+
 #[wasm_bindgen]
 pub struct Mandel {
   z: ZPlane<Cell>,
   depth: Cell,
   image: Vec<u8>,
-  colour_map: Vec<Vec<u8>>
+  colour_map: Vec<[u8; 4]>
 }
 
 #[wasm_bindgen]
@@ -29,9 +31,9 @@ impl Mandel {
 
     let mut mandel = Mandel {
       z: ZPlane::<Cell>::new(bottom_left, top_right, width, height),
-      depth: maxiter - 1,
+      depth: maxiter,
       image: vec![0u8; (width * height * 4) as usize],
-      colour_map: colour_map((maxiter - 1) as usize)
+      colour_map: colour_map(COLOUR_MAP_SIZE)
     };
 
     mandel.draw();
@@ -75,7 +77,7 @@ impl Mandel {
         let mut i2 = 0.0;
         let mut z_prev = z;
         let mut period = 0;
-        while it < self.depth && (r2 + i2) < 4.0 {
+        while it < self.depth - 1 && (r2 + i2) < self.z.rscale {
           // z = z * z + c;
           // hand optimised
           z.im = (z.re + z.re) * z.im + c.im;
@@ -86,7 +88,7 @@ impl Mandel {
 
           // check for periodicity and break early
           if z == z_prev {
-            it = self.depth;
+            it = self.depth - 1;
             break;
           }
           period += 1;
@@ -101,13 +103,12 @@ impl Mandel {
     }
   }
 
+  // TODO cleverer mapping between iters and cmap...logarithmic?
+
   pub fn render(&mut self) {
-    for i in 0..((self.z.width * self.z.height) as usize) {
-      self.image[i*4] = self.colour_map[self.z.cells[i] as usize][0];
-      self.image[i*4+1] = self.colour_map[self.z.cells[i] as usize][1];
-      self.image[i*4+2] = self.colour_map[self.z.cells[i] as usize][2];
-      self.image[i*4+3] = 255u8;
-    }
+    self.image = (0..(self.z.width * self.z.height) as usize)
+      .flat_map(|i| self.colour_map[self.z.cells[i] as usize % COLOUR_MAP_SIZE].clone())
+      .collect::<Vec<_>>();
   }
 
   pub fn image_buffer(&self) -> Uint8Array {

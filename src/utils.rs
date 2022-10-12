@@ -19,18 +19,19 @@ macro_rules! log {
   }
 }
 
-pub fn colour_map(n: usize) -> Vec<Vec<u8>> {
-  let mut colours = vec![vec![0u8; 4]; n+1];
+fn intensity(i: usize, m: usize, scale: f64) -> u8 {
+  255 - (127.5 * (1. - ((i * m) as f64 * scale).cos())) as u8
+}
+
+pub fn colour_map(n: usize) -> Vec<[u8; 4]> {
 
   let u = n - 1;
   let t = std::f64::consts::PI / (u as f64);
 
-  for (i, colour) in colours.iter_mut().enumerate().take(n + 1) {
-    colour[0] = 255 - (127.5 * (1. - (i as f64 * t).cos())) as u8;
-    colour[1] = 255 - (127.5 * (1. - ((i*3) as f64 * t).cos())) as u8;
-    colour[2] = 255 - (127.5 * (1. - ((i*5) as f64 * t).cos())) as u8;
-    colour[3] = 255;
-  }
+  let colours = (0..n).map(|i| [intensity(i, 1, t),
+                                intensity(i, 3, t),
+                                intensity(i, 5, t),
+                                255]).collect::<Vec<[u8; 4]>>();
 
   colours
 }

@@ -14,7 +14,7 @@ const runWasm = async () => {
     canvasElement.height
   );
 
-  var mandel = new Mandel(canvasElement.width, canvasElement.height, 2048);
+  var mandel = new Mandel(canvasElement.width, canvasElement.height, 4096);
 
   const imageData = mandel.image_buffer();
 
@@ -44,7 +44,6 @@ const runWasm = async () => {
 
     document.onmousedown = handleMouseClick;
     function handleMouseClick(event) {
-
       var factor = 0.5;
       if (event.which == 1) { // left click zooms in
         factor = 2.0;
@@ -58,8 +57,10 @@ const runWasm = async () => {
       const y = (event.clientY - rect.top) * canvasElement.height / canvasElement.clientHeight;
 
       if (x >= 0 && y >= 0 && x <= canvasElement.width && y <= canvasElement.height) {
+        document.body.style.cursor = "progress";
         mandel.zoom(x, y, factor);
         render();
+        document.body.style.cursor = "zoom-in";
       }
     }
   })();

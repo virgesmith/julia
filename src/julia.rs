@@ -16,7 +16,7 @@ pub struct Julia {
   c: Cplx<f64>, // as in z <-> z*z + c
   a: Cplx<f64>, // attraction point that c moves to
   image: Vec<u8>,
-  colour_map: Vec<Vec<u8>>
+  colour_map: Vec<[u8; 4]>
 }
 
 // speed at which c is pulled to a
