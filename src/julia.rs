@@ -83,20 +83,14 @@ impl Julia {
   }
 
   pub fn render(&mut self) {
-    let n = (self.z.width * self.z.height) as usize;
-    for i in 0..n {
-      self.image[i*4] = self.colour_map[self.z.cells[i] as usize][0];
-      self.image[i*4+1] = self.colour_map[self.z.cells[i] as usize][1];
-      self.image[i*4+2] = self.colour_map[self.z.cells[i] as usize][2];
-      self.image[i*4+3] = 255u8;
-    }
+
+    self.image = (0..(self.z.width * self.z.height) as usize)
+      .flat_map(|i| self.colour_map[self.z.cells[i] as usize].clone())
+      .collect::<Vec<_>>();
 
     // plot the locus
     let idx = self.z.get_index(&self.c);
-    self.image[idx*4] = 0u8;
-    self.image[idx*4+1] = 0u8;
-    self.image[idx*4+2] = 0u8;
-    self.image[idx*4+3] = 255u8;
+    self.image.splice(idx*4..(idx+1)*4, [0, 0, 0, 255]);
   }
 
   pub fn image_buffer(&self) -> Uint8Array {
