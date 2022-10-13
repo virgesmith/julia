@@ -41,8 +41,9 @@ const runWasm = async () => {
 
   var julia = new Julia(0.1, 0.1, 2.0, canvasElement.width, canvasElement.height);
 
-  const render = () => {
+  canvasElement.style.cursor = "crosshair";
 
+  const render = () => {
     julia.tick();
     julia.render();
 
@@ -57,22 +58,16 @@ const runWasm = async () => {
     animationId = requestAnimationFrame(render);
   };
 
-  (function() {
+  document.onmousemove = (event) => {
+    const rect = canvasElement.getBoundingClientRect();
 
-    document.onmousemove = handleMouseMove;
-    function handleMouseMove(event) {
+    const x = (event.clientX - rect.left) * canvasElement.width / canvasElement.clientWidth;
+    const y = (event.clientY - rect.top) * canvasElement.height / canvasElement.clientHeight;
 
-      const rect = canvasElement.getBoundingClientRect();
-
-      const x = (event.clientX - rect.left) * canvasElement.width / canvasElement.clientWidth;
-      const y = (event.clientY - rect.top) * canvasElement.height / canvasElement.clientHeight;
-
-      if (x >= 0 && y >= 0 && x <= canvasElement.width && y <= canvasElement.height) {
-        julia.set_attract(x, y);
-      }
+    if (x >= 0 && y >= 0 && x <= canvasElement.width && y <= canvasElement.height) {
+      julia.set_attract(x, y);
     }
-  })();
-
+  }
   render();
 };
 runWasm();
