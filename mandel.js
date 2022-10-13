@@ -36,36 +36,28 @@ const runWasm = async () => {
     canvasImageData.data.set(imageData);
 
     canvasContext.putImageData(canvasImageData, 0, 0);
+    canvasElement.style.cursor = "zoom-in";
   };
 
-
-  (function() {
-    "use strict";
-
-    document.onmousedown = handleMouseClick;
-    function handleMouseClick(event) {
-      var factor = 0.5;
-      if (event.which == 1) { // left click zooms in
-        factor = 2.0;
-      } else if (event.which != 2) { // wheel click zooms out
-        return;
-      }
-
-      const rect = canvasElement.getBoundingClientRect();
-
-      const x = (event.clientX - rect.left) * canvasElement.width / canvasElement.clientWidth;
-      const y = (event.clientY - rect.top) * canvasElement.height / canvasElement.clientHeight;
-
-      if (x >= 0 && y >= 0 && x <= canvasElement.width && y <= canvasElement.height) {
-        document.body.style.cursor = "progress";
-        mandel.zoom(x, y, factor);
-        render();
-        document.body.style.cursor = "zoom-in";
-      }
+  document.onmousedown = (event) => {
+    var factor = 0.5;
+    if (event.button == 0) { // left click zooms in
+      factor = 2.0;
+    } else if (event.button != 1) { // wheel click zooms out, anything else ignored
+      return;
     }
-  })();
 
+    const rect = canvasElement.getBoundingClientRect();
+
+    const x = (event.clientX - rect.left) * canvasElement.width / canvasElement.clientWidth;
+    const y = (event.clientY - rect.top) * canvasElement.height / canvasElement.clientHeight;
+
+    if (x >= 0 && y >= 0 && x <= canvasElement.width && y <= canvasElement.height) {
+      canvasElement.style.cursor = "progress"; // no discernible effect
+      mandel.zoom(x, y, factor);
+      render();
+    }
+  }
   render();
-};
-
+}
 runWasm();
