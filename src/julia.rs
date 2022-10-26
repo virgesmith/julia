@@ -31,7 +31,6 @@ impl Julia {
 
   #[wasm_bindgen(constructor)]
   pub fn new(cr: f64, ci: f64, scale: f64, width: u32, height: u32) -> Julia {
-
     set_panic_hook();
 
     let mut julia = Julia {
@@ -46,8 +45,7 @@ impl Julia {
   }
 
   pub fn set_attract(&mut self, row: u32, col: u32) {
-    let (c, _) = self.z.get_point(row, col);
-    self.a = c;
+    self.a = self.z.point_from_rc(row, col).0;
   }
 
   pub fn tick(&mut self) {
@@ -61,13 +59,12 @@ impl Julia {
   }
 
   fn iterate(&self, i: usize) -> Cell{
-    let (x, y) = (i as u32 / self.z.height, i as u32 % self.z.width);
-      let (mut z, _) = self.z.get_point(y, x);
-      let mut iter: Cell = 0;
-      while z.norm_sqr() < 400. && iter < MAXITER {
-        z = z * z + self.c;
-        iter += ITER_INC;
-      }
+    let mut z = self.z.point_from_index(i);
+    let mut iter: Cell = 0;
+    while z.norm_sqr() < 400. && iter < MAXITER {
+      z = z * z + self.c;
+      iter += ITER_INC;
+    }
     iter
   }
 
@@ -83,13 +80,12 @@ impl Julia {
   }
 
   pub fn render(&mut self) {
-
     self.image = (0..(self.z.width * self.z.height) as usize)
-      .flat_map(|i| self.colour_map[self.z.cells[i] as usize].clone())
+      .flat_map(|i| self.colour_map[self.z.cells[i] as usize])
       .collect::<Vec<_>>();
 
     // plot the locus
-    let idx = self.z.get_index(&self.c);
+    let idx = self.z.index_from_point(&self.c);
     self.image.splice(idx*4..(idx+1)*4, [0, 0, 0, 255]);
   }
 
