@@ -65,7 +65,7 @@ const runWasm = async () => {
     const y = (event.clientY - rect.top) * canvasElement.height / canvasElement.clientHeight;
 
     if (x >= 0 && y >= 0 && x <= canvasElement.width && y <= canvasElement.height) {
-      julia.set_attract(x, y);
+      julia.set_attract(y, x);
     }
   }
   render();

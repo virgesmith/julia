@@ -45,7 +45,7 @@ impl Julia {
   }
 
   pub fn set_attract(&mut self, row: u32, col: u32) {
-    self.a = self.z.point_from_rc(row, col).0;
+    self.a = self.z.point_from_rc((row, col));
   }
 
   pub fn tick(&mut self) {

@@ -54,7 +54,7 @@ const runWasm = async () => {
 
     if (x >= 0 && y >= 0 && x <= canvasElement.width && y <= canvasElement.height) {
       canvasElement.style.cursor = "progress"; // no discernible effect
-      mandel.zoom(x, y, factor);
+      mandel.zoom(y, x, factor);
       render();
     }
   }

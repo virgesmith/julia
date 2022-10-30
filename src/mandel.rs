@@ -25,8 +25,11 @@ impl Mandel {
   pub fn new(width: u32, height: u32, maxiter: Cell) -> Mandel {
     set_panic_hook();
 
-    let bottom_left = Cplx::<f64>::new(-2.0, -1.25);
-    let top_right = Cplx::<f64>::new(0.5, 1.25);
+    // fit to width and adjust y scale according to height
+    let ylim = 1.25 * height as f64 / width as f64;
+
+    let bottom_left = Cplx::<f64>::new(-2.0, -ylim);
+    let top_right = Cplx::<f64>::new(0.5, ylim);
 
     let mut mandel = Mandel {
       z: ZPlane::<Cell>::new(bottom_left, top_right, width, height),
@@ -53,9 +56,8 @@ impl Mandel {
 
   // factor > 1 zooms in
   pub fn zoom(&mut self, row: u32, col: u32, factor: f64) {
-    let (c, _) = self.z.point_from_rc(row, col);
-    self.z.rscale *= factor;
-    self.z.iscale *= factor;
+    let c = self.z.point_from_rc((row, col));
+    self.z.scale *= factor;
     let dr = (self.z.zmax.re - self.z.zmin.re) / (2.0 * factor);
     let di = (self.z.zmax.im - self.z.zmin.im) / (2.0 * factor);
     self.z.zmin.re = c.re - dr;
@@ -81,7 +83,7 @@ impl Mandel {
     let mut i2 = 0.0;
     let mut z_prev = z;
     let mut period = 0;
-    while it < self.depth - 1 && (r2 + i2) < self.z.rscale {
+    while it < self.depth - 1 && (r2 + i2) < self.z.scale.re {
       // z <- z * z + c;
       // hand optimised
       z.im = (z.re + z.re) * z.im + c.im;
