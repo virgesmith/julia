@@ -33,8 +33,12 @@ impl Julia {
   pub fn new(cr: f64, ci: f64, scale: f64, width: u32, height: u32) -> Julia {
     set_panic_hook();
 
+    let xscale = scale;
+    let yscale = scale * height as f64 / width as f64;
+
+
     let mut julia = Julia {
-      z: ZPlane::<Cell>::new(Cplx::new(-scale, -scale), Cplx::new(scale, scale), width, height),
+      z: ZPlane::<Cell>::new(Cplx::new(-xscale, -yscale), Cplx::new(xscale, yscale), width, height),
       c: Cplx::new(cr, ci),
       a: Cplx::new(0.0, 0.0),
       image: vec![0u8; (width * height * 4) as usize],

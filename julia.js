@@ -39,7 +39,7 @@ const runWasm = async () => {
     canvasElement.height
   );
 
-  var julia = new Julia(0.1, 0.1, 2.0, canvasElement.width, canvasElement.height);
+  var julia = new Julia(1.0, 0.0, 2.0, canvasElement.width, canvasElement.height);
 
   canvasElement.style.cursor = "crosshair";
 
