@@ -4,6 +4,7 @@ use js_sys::Uint8Array;
 
 //use rayon::prelude::*;
 use num_complex::Complex as Cplx;
+use std::cmp::{max, min};
 
 use crate::utils::{set_panic_hook, colour_map};
 use crate::argand::ZPlane;
@@ -36,7 +37,6 @@ impl Julia {
     let xscale = scale;
     let yscale = scale * height as f64 / width as f64;
 
-
     let mut julia = Julia {
       z: ZPlane::<Cell>::new(Cplx::new(-xscale, -yscale), Cplx::new(xscale, yscale), width, height),
       c: Cplx::new(cr, ci),
@@ -65,8 +65,14 @@ impl Julia {
   fn iterate(&self, i: usize) -> Cell{
     let mut z = self.z.point_from_index(i);
     let mut iter: Cell = 0;
-    while z.norm_sqr() < 400. && iter < MAXITER {
-      z = z * z + self.c;
+    let mut r2 = z.re * z.re;
+    let mut i2 = z.im * z.im;
+    while r2 + i2 < 400. && iter < MAXITER {
+      // z = z * z + self.c;
+      z.im = (z.re + z.re) * z.im + self.c.im;
+      z.re = r2 - i2 + self.c.re;
+      r2 = z.re * z.re;
+      i2 = z.im * z.im;
       iter += ITER_INC;
     }
     iter
@@ -89,7 +95,23 @@ impl Julia {
       .collect::<Vec<_>>();
 
     // plot the locus
-    let idx = self.z.index_from_point(&self.c);
+    let (x, y) = self.z.rc_from_point(&self.c);
+    let idx = self.z.index_from_rc((x, y));
+    self.image.splice(idx*4..(idx+1)*4, [0, 0, 0, 255]);
+
+    let x1 = min(x+1, self.z.width-1);
+    let idx = self.z.index_from_rc((x1, y));
+    self.image.splice(idx*4..(idx+1)*4, [0, 0, 0, 255]);
+    let x1 = max(x-1, 0);
+    let idx = self.z.index_from_rc((x1, y));
+    self.image.splice(idx*4..(idx+1)*4, [0, 0, 0, 255]);
+
+    let y1 = max(y-1, 0);
+    let idx = self.z.index_from_rc((x, y1));
+    self.image.splice(idx*4..(idx+1)*4, [0, 0, 0, 255]);
+
+    let y1 = min(y+1, self.z.height-1);
+    let idx = self.z.index_from_rc((x, y1));
     self.image.splice(idx*4..(idx+1)*4, [0, 0, 0, 255]);
   }
 
