@@ -7,7 +7,8 @@ let animationId = null;
 const runWasm = async () => {
   await init("./pkg/julia_bg.wasm");
 
-  const canvasElement = document.querySelector("canvas");
+  const canvasElement = document.querySelector("#foreground");
+  const overlayElement = document.querySelector("#background");
   const playPauseButton = document.querySelector("button");
 
   const isPaused = () => {
@@ -39,7 +40,17 @@ const runWasm = async () => {
     canvasElement.height
   );
 
+  const overlayContext = overlayElement.getContext("2d");
+  const overlayImageData = overlayContext.createImageData(
+    overlayElement.width,
+    overlayElement.height
+  );
+
   var julia = new Julia(1.0, 0.0, 2.0, canvasElement.width, canvasElement.height);
+
+  const overlayData = julia.background_buffer();
+  overlayImageData.data.set(overlayData);
+  overlayContext.putImageData(overlayImageData, 0, 0);
 
   canvasElement.style.cursor = "crosshair";
 
@@ -50,9 +61,7 @@ const runWasm = async () => {
     canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
     const imageData = julia.image_buffer();
-
     canvasImageData.data.set(imageData);
-
     canvasContext.putImageData(canvasImageData, 0, 0);
 
     animationId = requestAnimationFrame(render);

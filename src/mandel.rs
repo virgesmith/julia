@@ -18,6 +18,21 @@ pub struct Mandel {
   colour_map: Vec<[u8; 4]>
 }
 
+impl Mandel {
+  pub fn custom(bottom_left: Cplx<f64>, top_right: Cplx<f64>, width: u32, height: u32,
+    maxiter: Cell, cmap_size: usize, cmap_cycles: (usize, usize, usize), alpha: u8) -> Mandel {
+    let mut mandel = Mandel {
+      z: ZPlane::<Cell>::new(bottom_left, top_right, width, height),
+      depth: maxiter,
+      image: vec![0u8; (width * height * 4) as usize],
+      colour_map: colour_map(cmap_size, cmap_cycles, alpha)
+    };
+
+    mandel.draw();
+    mandel
+  }
+}
+
 #[wasm_bindgen]
 impl Mandel {
 
@@ -35,11 +50,15 @@ impl Mandel {
       z: ZPlane::<Cell>::new(bottom_left, top_right, width, height),
       depth: maxiter,
       image: vec![0u8; (width * height * 4) as usize],
-      colour_map: colour_map(COLOUR_MAP_SIZE)
+      colour_map: colour_map(COLOUR_MAP_SIZE, (3, 3, 1), 255)
     };
 
     mandel.draw();
     mandel
+  }
+
+  pub fn raw_image(&self) -> Vec<u8> {
+    self.image.clone()
   }
 
   pub fn mid_r(&self) -> f64 {

@@ -23,14 +23,14 @@ fn intensity(i: usize, m: usize, scale: f64) -> u8 {
   255 - (127.5 * (1. - ((i * m) as f64 * scale).cos())) as u8
 }
 
-pub fn colour_map(n: usize) -> Vec<[u8; 4]> {
+pub fn colour_map(n: usize, cycles: (usize, usize, usize), alpha: u8) -> Vec<[u8; 4]> {
 
   let u = n - 1;
   let t = std::f64::consts::PI / (u as f64);
 
-  (0..n).map(|i| [intensity(i, 3, t),
-                  intensity(i, 3, t),
-                  intensity(i, 1, t),
-                  255]).collect::<Vec<[u8; 4]>>()
+  (0..n).map(|i| [intensity(i, cycles.0, t),
+                  intensity(i, cycles.1, t),
+                  intensity(i, cycles.2, t),
+                  alpha]).collect::<Vec<[u8; 4]>>()
 }
 

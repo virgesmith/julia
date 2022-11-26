@@ -6,6 +6,7 @@ use js_sys::Uint8Array;
 use num_complex::Complex as Cplx;
 use std::cmp::{max, min};
 
+use crate::mandel::Mandel;
 use crate::utils::{set_panic_hook, colour_map};
 use crate::argand::ZPlane;
 
@@ -17,14 +18,15 @@ pub struct Julia {
   c: Cplx<f64>, // as in z <-> z*z + c
   a: Cplx<f64>, // attraction point that c moves to
   image: Vec<u8>,
-  colour_map: Vec<[u8; 4]>
+  colour_map: Vec<[u8; 4]>,
+  overlay_image: Vec<u8>,
 }
 
 // speed at which c is pulled to a
 const SPEED: f64 = 0.01;
 
 const MAXITER: Cell = 254;
-const ITER_INC: Cell = 2;
+const ITER_INC: Cell = 1;
 
 
 #[wasm_bindgen]
@@ -36,13 +38,19 @@ impl Julia {
 
     let xscale = scale;
     let yscale = scale * height as f64 / width as f64;
+    let bottom_left = Cplx::new(-xscale, -yscale);
+    let top_right = Cplx::new(xscale, yscale);
+
+    let mut mandel = Mandel::custom(bottom_left, top_right, width, height, 512, 512, (2,2,2), 255);
+    mandel.render();
 
     let mut julia = Julia {
-      z: ZPlane::<Cell>::new(Cplx::new(-xscale, -yscale), Cplx::new(xscale, yscale), width, height),
+      z: ZPlane::<Cell>::new(bottom_left, top_right, width, height),
       c: Cplx::new(cr, ci),
       a: Cplx::new(0.0, 0.0),
       image: vec![0u8; (width * height * 4) as usize],
-      colour_map: colour_map(512)
+      colour_map: colour_map(512, (3, 3, 1), 192),
+      overlay_image: mandel.raw_image()
     };
     julia.draw();
     julia
@@ -67,7 +75,7 @@ impl Julia {
     let mut iter: Cell = 0;
     let mut r2 = z.re * z.re;
     let mut i2 = z.im * z.im;
-    while r2 + i2 < 400. && iter < MAXITER {
+    while r2 + i2 < self.z.scale.re /*400.*/ && iter < MAXITER {
       // z = z * z + self.c;
       z.im = (z.re + z.re) * z.im + self.c.im;
       z.re = r2 - i2 + self.c.re;
@@ -117,5 +125,9 @@ impl Julia {
 
   pub fn image_buffer(&self) -> Uint8Array {
     unsafe { Uint8Array::view(&self.image) }
+  }
+
+  pub fn background_buffer(&self) -> Uint8Array {
+    unsafe { Uint8Array::view(&self.overlay_image) }
   }
 }
