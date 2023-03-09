@@ -49,7 +49,7 @@ impl Julia {
       c: Cplx::new(cr, ci),
       a: Cplx::new(0.0, 0.0),
       image: vec![0u8; (width * height * 4) as usize],
-      colour_map: colour_map(512, (3, 3, 1), 192),
+      colour_map: colour_map(512, (5, 1, 3), 192),
       overlay_image: mandel.raw_image()
     };
     julia.draw();

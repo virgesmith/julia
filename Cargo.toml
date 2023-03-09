@@ -1,7 +1,7 @@
 [package]
 name = "julia"
 description = "Fractal rendering in the browser using rust compiled to wasm"
-license = "MIT"
+license-file = "LICENCE.md"
 version = "0.1.0"
 authors = ["Andrew Smith"]
 edition = "2021"
