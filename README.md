@@ -8,6 +8,12 @@ This version is a barebones reworking of a previous implementation that was bese
 
 Based on the tutorial [here](https://wasmbyexample.dev). Doesn't require node.js or webpack.
 
+## prepare
+
+First, install
+- [rust](https://www.rust-lang.org/tools/install)
+- [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/)
+
 ## build
 
 ```sh
@@ -38,3 +44,7 @@ Uses the nginx docker image:
 docker build -t julia .
 docker run -it -d -p 80:80 julia:latest
 ```
+
+## TODO
+
+- [ ] parallelise (this is bleeding edge, see https://github.com/GoogleChromeLabs/wasm-bindgen-rayon)

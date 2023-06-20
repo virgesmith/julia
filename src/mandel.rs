@@ -57,6 +57,10 @@ impl Mandel {
     mandel
   }
 
+  pub fn iterations(&self) -> Vec<Cell> {
+    self.z.cells.clone()
+  }
+
   pub fn raw_image(&self) -> Vec<u8> {
     self.image.clone()
   }

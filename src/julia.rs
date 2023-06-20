@@ -12,6 +12,7 @@ use crate::argand::ZPlane;
 
 type Cell = u8;
 
+
 #[wasm_bindgen]
 pub struct Julia {
   z: ZPlane<Cell>,
@@ -20,12 +21,15 @@ pub struct Julia {
   image: Vec<u8>,
   colour_map: Vec<[u8; 4]>,
   overlay_image: Vec<u8>,
+  inside_mandel: Vec<bool>
 }
 
 // speed at which c is pulled to a
 const SPEED: f64 = 0.01;
 
 const MAXITER: Cell = 254;
+// reduced max iteration when point c is inside the Mandelbrot boundary, for perfomance
+const MAXITER_INSIDE: Cell = 63;
 const ITER_INC: Cell = 1;
 
 
@@ -41,17 +45,25 @@ impl Julia {
     let bottom_left = Cplx::new(-xscale, -yscale);
     let top_right = Cplx::new(xscale, yscale);
 
-    let mut mandel = Mandel::custom(bottom_left, top_right, width, height, 512, 512, (2,2,2), 255);
+    let maxiter = 512;
+    let colour_depth = maxiter as usize;
+    let mut mandel = Mandel::custom(bottom_left, top_right, width, height, maxiter, colour_depth, (2,2,2), 255);
     mandel.render();
+
+    // TODO shrink the boundary to ensure we don't reduce the iterations right at the edge
+    let /*mut*/ inside_mandel = mandel.iterations().iter().map(|x| *x == maxiter - 1).collect();
 
     let mut julia = Julia {
       z: ZPlane::<Cell>::new(bottom_left, top_right, width, height),
       c: Cplx::new(cr, ci),
       a: Cplx::new(0.0, 0.0),
       image: vec![0u8; (width * height * 4) as usize],
-      colour_map: colour_map(512, (5, 1, 3), 192),
-      overlay_image: mandel.raw_image()
+      colour_map: colour_map(512, (1, 3, 5), 192),
+      overlay_image: mandel.raw_image(),
+      // TODO we could just store an array of maxiter (u8)?
+      inside_mandel: inside_mandel
     };
+
     julia.draw();
     julia
   }
@@ -70,12 +82,12 @@ impl Julia {
     self.draw();
   }
 
-  fn iterate(&self, i: usize) -> Cell{
+  fn iterate(&self, i: usize, maxiter: Cell) -> Cell{
     let mut z = self.z.point_from_index(i);
     let mut iter: Cell = 0;
     let mut r2 = z.re * z.re;
     let mut i2 = z.im * z.im;
-    while r2 + i2 < self.z.scale.re /*400.*/ && iter < MAXITER {
+    while r2 + i2 < self.z.scale.re /*400.*/ && iter < maxiter {
       // z = z * z + self.c;
       z.im = (z.re + z.re) * z.im + self.c.im;
       z.re = r2 - i2 + self.c.re;
@@ -83,7 +95,11 @@ impl Julia {
       i2 = z.im * z.im;
       iter += ITER_INC;
     }
-    iter
+    // if reduced iterations return MAXITER anyway so that colours are correct
+    match iter {
+      i if i >= maxiter => MAXITER,
+      _ => iter
+    }
   }
 
   fn draw(&mut self) {
@@ -91,7 +107,14 @@ impl Julia {
     let n = (self.z.width * self.z.height / 2) as usize;
     let mut next = vec![0 as Cell; n];
 
-    next.iter_mut().enumerate().for_each(|(i, n)| *n = self.iterate(i));
+    // when c is inside the Mandelbrot set, iterations do not diverge, so reduce the max iterations
+    // for performance (the Julia sets are less interesting here anyway)
+    let maxiter = match self.inside_mandel[self.z.index_from_point(&self.c)] {
+      true => MAXITER_INSIDE,
+      _ => MAXITER
+    };
+
+    next.iter_mut().enumerate().for_each(|(i, n)| *n = self.iterate(i, maxiter));
     self.z.cells[0..n].copy_from_slice(&next);
     next.reverse();
     self.z.cells[n..].copy_from_slice(&next);
