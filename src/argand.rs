@@ -2,34 +2,34 @@
 use num_complex::Complex as Cplx;
 use num_traits::{Unsigned, Zero};
 
+use crate::utils::ImageSize;
+
 
 pub struct ZPlane<T> {
   pub zmin: Cplx<f64>, // bottom left
   pub zmax: Cplx<f64>, // top right
   pub scale: Cplx<f64>,
-  pub width: u32,
-  pub height: u32,
+  pub size: ImageSize,
   pub cells: Vec<T>,
 }
 
 impl<T: Zero + Unsigned + Clone> ZPlane<T> {
-  pub fn new(zmin: Cplx<f64>, zmax: Cplx<f64>, width: u32, height: u32) -> ZPlane<T> {
+  pub fn new(zmin: Cplx<f64>, zmax: Cplx<f64>, size: ImageSize) -> ZPlane<T> {
     ZPlane {
       zmin,
       zmax,
-      width,
-      height,
-      scale: Cplx::new(width as f64 / (zmax.re - zmin.re), height as f64 / (zmax.im - zmin.im)),
-      cells: vec![T::zero(); (width * height) as usize]
+      scale: Cplx::new(size.0 as f64 / (zmax.re - zmin.re), size.1 as f64 / (zmax.im - zmin.im)),
+      size,
+      cells: vec![T::zero(); (size.0 * size.1) as usize]
     }
   }
 
   pub fn index_from_rc(&self, rc: (u32, u32)) -> usize {
-    (rc.0 * self.width + rc.1) as usize
+    (rc.0 * self.size.0 + rc.1) as usize
   }
 
   pub fn rc_from_index(&self, idx: usize) -> (u32, u32) {
-    (idx as u32 / self.width, idx as u32 % self.width)
+    (idx as u32 / self.size.0, idx as u32 % self.size.0)
   }
 
   pub fn point_from_rc(&self, rc: (u32, u32)) -> Cplx::<f64> {

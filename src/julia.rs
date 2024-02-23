@@ -2,7 +2,7 @@ use wasm_bindgen::prelude::*;
 
 use js_sys::Uint8Array;
 
-//use rayon::prelude::*;
+use rayon::prelude::*;
 use num_complex::Complex as Cplx;
 use std::cmp::{max, min};
 
@@ -47,21 +47,21 @@ impl Julia {
 
     let maxiter = 512;
     let colour_depth = maxiter as usize;
-    let mut mandel = Mandel::custom(bottom_left, top_right, width, height, maxiter, colour_depth, (2,2,2), 255);
+    let mut mandel = Mandel::custom(bottom_left, top_right, (width, height), maxiter, colour_depth, (2,2,2), 255);
     mandel.render();
 
     // TODO shrink the boundary to ensure we don't reduce the iterations right at the edge
     let /*mut*/ inside_mandel = mandel.iterations().iter().map(|x| *x == maxiter - 1).collect();
 
     let mut julia = Julia {
-      z: ZPlane::<Cell>::new(bottom_left, top_right, width, height),
+      z: ZPlane::<Cell>::new(bottom_left, top_right, (width, height)),
       c: Cplx::new(cr, ci),
       a: Cplx::new(0.0, 0.0),
       image: vec![0u8; (width * height * 4) as usize],
-      colour_map: colour_map(512, (1, 3, 5), 192),
+      colour_map: colour_map(512, (2, 1, 3), 192),
       overlay_image: mandel.raw_image(),
       // TODO we could just store an array of maxiter (u8)?
-      inside_mandel: inside_mandel
+      inside_mandel
     };
 
     julia.draw();
@@ -104,7 +104,7 @@ impl Julia {
 
   fn draw(&mut self) {
     // iterate over half the plane (symmetry)
-    let n = (self.z.width * self.z.height / 2) as usize;
+    let n = (self.z.size.0 * self.z.size.1 / 2) as usize;
     let mut next = vec![0 as Cell; n];
 
     // when c is inside the Mandelbrot set, iterations do not diverge, so reduce the max iterations
@@ -114,14 +114,14 @@ impl Julia {
       _ => MAXITER
     };
 
-    next.iter_mut().enumerate().for_each(|(i, n)| *n = self.iterate(i, maxiter));
+    next.par_iter_mut().enumerate().for_each(|(i, n)| *n = self.iterate(i, maxiter));
     self.z.cells[0..n].copy_from_slice(&next);
     next.reverse();
     self.z.cells[n..].copy_from_slice(&next);
   }
 
   pub fn render(&mut self) {
-    self.image = (0..(self.z.width * self.z.height) as usize)
+    self.image = (0..(self.z.size.0 * self.z.size.1) as usize)
       .flat_map(|i| self.colour_map[self.z.cells[i] as usize])
       .collect::<Vec<_>>();
 
@@ -130,7 +130,7 @@ impl Julia {
     let idx = self.z.index_from_rc((x, y));
     self.image.splice(idx*4..(idx+1)*4, [0, 0, 0, 255]);
 
-    let x1 = min(x+1, self.z.width-1);
+    let x1 = min(x+1, self.z.size.0-1);
     let idx = self.z.index_from_rc((x1, y));
     self.image.splice(idx*4..(idx+1)*4, [0, 0, 0, 255]);
     let x1 = max(x-1, 0);
@@ -141,7 +141,7 @@ impl Julia {
     let idx = self.z.index_from_rc((x, y1));
     self.image.splice(idx*4..(idx+1)*4, [0, 0, 0, 255]);
 
-    let y1 = min(y+1, self.z.height-1);
+    let y1 = min(y+1, self.z.size.1-1);
     let idx = self.z.index_from_rc((x, y1));
     self.image.splice(idx*4..(idx+1)*4, [0, 0, 0, 255]);
   }

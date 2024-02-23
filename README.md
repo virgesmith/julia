@@ -47,4 +47,4 @@ docker run -it -d -p 80:80 julia:latest
 
 ## TODO
 
-- [ ] parallelise (this is bleeding edge, see https://github.com/GoogleChromeLabs/wasm-bindgen-rayon)
+- [X] parallelise e.g. https://rustwasm.github.io/docs/wasm-bindgen/examples/raytrace.html

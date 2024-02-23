@@ -1,14 +1,15 @@
 use wasm_bindgen::prelude::*;
 
+use rayon::prelude::*;
 use num_complex::Complex as Cplx;
 use js_sys::Uint8Array;
 
-use crate::utils::{colour_map, set_panic_hook};
+use crate::utils::{colour_map, set_panic_hook, ImageSize};
 use crate::argand::ZPlane;
 
 type Cell = u16;
 
-const COLOUR_MAP_SIZE: usize = 1024;
+const COLOUR_MAP_SIZE: usize = 4096;
 
 #[wasm_bindgen]
 pub struct Mandel {
@@ -19,12 +20,12 @@ pub struct Mandel {
 }
 
 impl Mandel {
-  pub fn custom(bottom_left: Cplx<f64>, top_right: Cplx<f64>, width: u32, height: u32,
+  pub fn custom(bottom_left: Cplx<f64>, top_right: Cplx<f64>, size: ImageSize,
     maxiter: Cell, cmap_size: usize, cmap_cycles: (usize, usize, usize), alpha: u8) -> Mandel {
     let mut mandel = Mandel {
-      z: ZPlane::<Cell>::new(bottom_left, top_right, width, height),
+      z: ZPlane::<Cell>::new(bottom_left, top_right, size),
       depth: maxiter,
-      image: vec![0u8; (width * height * 4) as usize],
+      image: vec![0u8; (size.0 * size.1 * 4) as usize],
       colour_map: colour_map(cmap_size, cmap_cycles, alpha)
     };
 
@@ -47,10 +48,10 @@ impl Mandel {
     let top_right = Cplx::<f64>::new(0.5, ylim);
 
     let mut mandel = Mandel {
-      z: ZPlane::<Cell>::new(bottom_left, top_right, width, height),
+      z: ZPlane::<Cell>::new(bottom_left, top_right, (width, height)),
       depth: maxiter,
       image: vec![0u8; (width * height * 4) as usize],
-      colour_map: colour_map(COLOUR_MAP_SIZE, (3, 3, 1), 255)
+      colour_map: colour_map(COLOUR_MAP_SIZE, (3, 5, 1), 255)
     };
 
     mandel.draw();
@@ -91,10 +92,10 @@ impl Mandel {
   }
 
   fn draw(&mut self) {
-    let n = (self.z.width * self.z.height) as usize;
+    let n = (self.z.size.0 * self.z.size.1) as usize;
     let mut next = vec![0 as Cell; n];
 
-    next.iter_mut().enumerate().for_each(|(i, n)| *n = self.iterate(i));
+    next.par_iter_mut().enumerate().for_each(|(i, n)| *n = self.iterate(i));
     self.z.cells.copy_from_slice(&next);
   }
 
@@ -131,7 +132,7 @@ impl Mandel {
 
   // TODO cleverer mapping between iters and cmap...logarithmic?
   pub fn render(&mut self) {
-    self.image = (0..(self.z.width * self.z.height) as usize)
+    self.image = (0..(self.z.size.0 * self.z.size.1) as usize)
       .flat_map(|i| self.colour_map[self.z.cells[i] as usize % COLOUR_MAP_SIZE])
       .collect::<Vec<_>>();
   }

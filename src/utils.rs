@@ -10,6 +10,7 @@ pub fn set_panic_hook() {
     console_error_panic_hook::set_once();
 }
 
+pub type ImageSize = (u32, u32); // width, height
 
 // A macro to provide `println!(..)`-style syntax for `console.log` logging.
 #[allow(unused_macros)]
