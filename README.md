@@ -4,15 +4,13 @@
 
 [Animated Julia sets](https://friarswood.net) and a [zoomable Mandelbrot set](https://friarswood.net/mandel.html), implemented in rust and webassembly.
 
-This version is a barebones reworking of a previous implementation that was beset by node.js vulnerabilities.
-
-Based on the tutorial [here](https://wasmbyexample.dev). Doesn't require node.js or webpack.
+This version is a barebones reworking of a previous implementation that was beset by node.js vulnerabilities. Based on the tutorial [here](https://wasmbyexample.dev). Doesn't require node.js or webpack.
 
 ## prepare
 
-First, install
-- [rust](https://www.rust-lang.org/tools/install)
-- [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/)
+Install [rust](https://www.rust-lang.org/tools/install) if not already present.
+
+Then install [wasm-pack](https://github.com/wasm-bindgen/wasm-pack/): `cargo install wasm-pack`
 
 ## build
 
@@ -25,7 +23,7 @@ wasm-pack build --target web --no-typescript
 Use a proper web server for prod. For local dev:
 
 ```sh
-python3 -m http.server
+python -m http.server
 ```
 
 ## test (on firefox)

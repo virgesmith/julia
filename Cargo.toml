@@ -2,9 +2,9 @@
 name = "julia"
 description = "Fractal rendering in the browser using rust compiled to wasm"
 license-file = "LICENCE.md"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Andrew Smith"]
-edition = "2021"
+edition = "2024"
 repository = "https://github.com/virgesmith/julia"
 
 [lib]
@@ -18,7 +18,6 @@ wasm-bindgen = "*"
 js-sys = "*"
 num-complex = "*"
 num-traits = "*"
-rayon = "*"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
@@ -29,14 +28,3 @@ console_error_panic_hook = { version = "*", optional = true }
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = true
 
-
-# [dependencies.web-sys]
-# version = "^0.3.4"
-# features = [
-#   'Document',
-#   'Element',
-#   'HtmlElement',
-#   'Node',
-#   'Window',
-#   'console'
-# ]

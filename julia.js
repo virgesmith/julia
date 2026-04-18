@@ -34,6 +34,17 @@ const runWasm = async () => {
     }
   });
 
+  document.addEventListener("keydown", event => {
+    if (event.code === "Space") {
+      event.preventDefault();
+      if (isPaused()) {
+        play();
+      } else {
+        pause();
+      }
+    }
+  });
+
   const canvasContext = canvasElement.getContext("2d");
   const canvasImageData = canvasContext.createImageData(
     canvasElement.width,
