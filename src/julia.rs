@@ -77,10 +77,7 @@ impl Julia {
     }
 
     pub fn tick(&mut self) {
-        self.c += Cplx::new(
-            (self.a.re - self.c.re) * SPEED,
-            (self.a.im - self.c.im) * SPEED,
-        );
+        self.c += Cplx::new((self.a.re - self.c.re) * SPEED, (self.a.im - self.c.im) * SPEED);
         if self.c.re > self.z.zmax.re {
             self.c.re = self.z.zmax.re;
         }

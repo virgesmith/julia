@@ -100,9 +100,7 @@ impl Mandel {
         let n = (self.z.size.0 * self.z.size.1) as usize;
         let mut next = vec![0 as Cell; n];
 
-        next.iter_mut()
-            .enumerate()
-            .for_each(|(i, n)| *n = self.iterate(i));
+        next.iter_mut().enumerate().for_each(|(i, n)| *n = self.iterate(i));
         self.z.cells.copy_from_slice(&next);
     }
 

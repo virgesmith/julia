@@ -42,7 +42,3 @@ Uses the nginx docker image:
 docker build -t julia .
 docker run -it -d -p 80:80 julia:latest
 ```
-
-## TODO
-
-- [X] parallelise e.g. https://rustwasm.github.io/docs/wasm-bindgen/examples/raytrace.html

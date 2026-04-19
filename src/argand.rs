@@ -16,10 +16,7 @@ impl<T: Zero + Unsigned + Clone> ZPlane<T> {
         ZPlane {
             zmin,
             zmax,
-            scale: Cplx::new(
-                size.0 as f64 / (zmax.re - zmin.re),
-                size.1 as f64 / (zmax.im - zmin.im),
-            ),
+            scale: Cplx::new(size.0 as f64 / (zmax.re - zmin.re), size.1 as f64 / (zmax.im - zmin.im)),
             size,
             cells: vec![T::zero(); (size.0 * size.1) as usize],
         }
