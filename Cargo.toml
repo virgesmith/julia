@@ -14,16 +14,16 @@ crate-type = ["cdylib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-wasm-bindgen = "*"
-js-sys = "*"
-num-complex = "*"
-num-traits = "*"
+wasm-bindgen = "0.2.125"
+js-sys = "0.3.102"
+num-complex = "0.4.6"
+num-traits = "0.2.19"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
 # code size when deploying.
-console_error_panic_hook = { version = "*", optional = true }
+console_error_panic_hook = { version = "0.1.7", optional = true }
 
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = true

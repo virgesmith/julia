@@ -4,7 +4,7 @@ use js_sys::Uint8Array;
 use num_complex::Complex as Cplx;
 
 use crate::argand::ZPlane;
-use crate::utils::{colour_map, set_panic_hook, ImageSize};
+use crate::utils::{ImageSize, colour_map, set_panic_hook};
 
 type Cell = u16;
 

@@ -28,6 +28,9 @@ const SPEED: f64 = 0.01;
 const MAXITER: Cell = 254;
 // reduced max iteration when point c is inside the Mandelbrot boundary, for perfomance
 const MAXITER_INSIDE: Cell = 63;
+// the reduction is only applied this far (in pixels) inside the boundary, so it doesn't kick
+// in right at the detailed edge of the set. Larger = the reduction stays further from the edge.
+const BUFFER_PIXELS: i32 = 6;
 const ITER_INC: Cell = 1;
 
 #[wasm_bindgen]
@@ -43,26 +46,21 @@ impl Julia {
 
         let maxiter = 512;
         let colour_depth = maxiter as usize;
-        let mut mandel = Mandel::custom(
-            bottom_left,
-            top_right,
-            (width, height),
-            maxiter,
-            colour_depth,
-            (2, 2, 2),
-            255,
-        );
+        let mut mandel = Mandel::custom(bottom_left, top_right, (width, height), maxiter, colour_depth, (2, 2, 2), 255);
         mandel.render();
 
-        // TODO shrink the boundary to ensure we don't reduce the iterations right at the edge
-        let /*mut*/ inside_mandel = mandel.iterations().iter().map(|x| *x == maxiter - 1).collect();
+        // points that never escaped are inside the Mandelbrot set...
+        let inside = mandel.iterations().iter().map(|x| *x == maxiter - 1).collect::<Vec<bool>>();
+        // ...but erode that mask by a buffer so the iteration reduction is imposed a small
+        // distance inside the boundary, not right at the detailed edge where it would show
+        let inside_mandel = erode(&inside, (width, height), BUFFER_PIXELS);
 
         let mut julia = Julia {
             z: ZPlane::<Cell>::new(bottom_left, top_right, (width, height)),
             c: Cplx::new(cr, ci),
             a: Cplx::new(0.0, 0.0),
             image: vec![0u8; (width * height * 4) as usize],
-            colour_map: colour_map(512, (5, 3, 2), 192),
+            colour_map: colour_map(512, (1, 2, 3), 192),
             overlay_image: mandel.raw_image(),
             // TODO we could just store an array of maxiter (u8)?
             inside_mandel,
@@ -126,9 +124,7 @@ impl Julia {
             _ => MAXITER,
         };
 
-        next.iter_mut()
-            .enumerate()
-            .for_each(|(i, n)| *n = self.iterate(i, maxiter));
+        next.iter_mut().enumerate().for_each(|(i, n)| *n = self.iterate(i, maxiter));
         self.z.cells[0..n].copy_from_slice(&next);
         next.reverse();
         self.z.cells[n..].copy_from_slice(&next);
@@ -167,4 +163,34 @@ impl Julia {
     pub fn background_buffer(&self) -> Uint8Array {
         unsafe { Uint8Array::view(&self.overlay_image) }
     }
+}
+
+// Erode a boolean mask by `buffer` pixels (square structuring element): a cell stays `true`
+// only if every cell within `buffer` of it - including off-grid cells, treated as `false` - is
+// also `true`. Done as two separable 1D passes, so O(width * height * buffer), run once at
+// construction. Used to pull the "inside Mandelbrot" region back from the boundary.
+fn erode(mask: &[bool], (width, height): (u32, u32), buffer: i32) -> Vec<bool> {
+    let (w, h) = (width as i32, height as i32);
+    let idx = |r: i32, c: i32| (r * w + c) as usize;
+    let window_all = |get: &dyn Fn(i32) -> bool, p: i32, lim: i32| {
+        (-buffer..=buffer).all(|d| {
+            let q = p + d;
+            q >= 0 && q < lim && get(q)
+        })
+    };
+
+    let mut horiz = vec![false; mask.len()];
+    for r in 0..h {
+        for c in 0..w {
+            horiz[idx(r, c)] = window_all(&|cc| mask[idx(r, cc)], c, w);
+        }
+    }
+
+    let mut out = vec![false; mask.len()];
+    for c in 0..w {
+        for r in 0..h {
+            out[idx(r, c)] = window_all(&|rr| horiz[idx(rr, c)], r, h);
+        }
+    }
+    out
 }

@@ -36,7 +36,7 @@ firefox --private-window localhost:8000
 
 ## package/deploy
 
-Uses the nginx docker image:
+Copies the local build to the nginx docker image:
 
 ```sh
 docker build -t julia .

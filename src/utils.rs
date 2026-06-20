@@ -28,13 +28,6 @@ pub fn colour_map(n: usize, cycles: (usize, usize, usize), alpha: u8) -> Vec<[u8
     let t = std::f64::consts::PI / (u as f64);
 
     (0..n)
-        .map(|i| {
-            [
-                intensity(i, cycles.0, t),
-                intensity(i, cycles.1, t),
-                intensity(i, cycles.2, t),
-                alpha,
-            ]
-        })
+        .map(|i| [intensity(i, cycles.0, t), intensity(i, cycles.1, t), intensity(i, cycles.2, t), alpha])
         .collect::<Vec<[u8; 4]>>()
 }
